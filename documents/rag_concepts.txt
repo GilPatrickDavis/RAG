@@ -1,0 +1,39 @@
+What is RAG (Retrieval-Augmented Generation)?
+
+RAG stands for Retrieval-Augmented Generation. It is a technique that combines the power of large language models (LLMs) with a retrieval system to ground the model's responses in real, specific documents. Instead of relying solely on the knowledge baked into the model during training, RAG pulls in fresh, relevant information at query time.
+
+How Does RAG Work?
+
+The RAG pipeline has two main phases: indexing and querying.
+
+In the indexing phase, documents are loaded from various sources such as PDFs, web pages, or plain text files. These documents are split into smaller pieces called chunks, usually between 200 and 1000 tokens. Each chunk is then converted into a numerical vector called an embedding using an embedding model. These embeddings capture the semantic meaning of the text. The chunks and their embeddings are stored in a vector database such as Weaviate, Pinecone, or Chroma.
+
+In the querying phase, the user provides a question or query. That query is also converted into an embedding using the same embedding model. The vector database performs a similarity search, comparing the query embedding against all stored chunk embeddings. The top-K most similar chunks are retrieved. These chunks, along with the original query, are assembled into a prompt for the LLM. The LLM generates a final answer grounded in the retrieved context.
+
+Why Use RAG?
+
+LLMs have a knowledge cutoff date. They cannot know about events that happened after their training. RAG solves this by allowing the model to access up-to-date documents at inference time. RAG also reduces hallucinations because the model is explicitly told what information to use. It enables domain-specific question answering over private or proprietary documents that the model was never trained on. RAG is more cost-effective than fine-tuning, which requires expensive retraining.
+
+What Are Embeddings?
+
+Embeddings are dense numerical vectors that represent the meaning of text. Similar texts have embeddings that are close together in vector space, measured by cosine similarity or dot product. For example, the sentence "The cat sat on the mat" and "A feline rested on the rug" would have similar embeddings because they mean the same thing. Popular embedding models include OpenAI's text-embedding-3-small, Sentence Transformers all-MiniLM-L6-v2, and Cohere's embed models.
+
+What is a Vector Database?
+
+A vector database is a specialized database optimized for storing and searching high-dimensional vectors. Unlike traditional databases that search by exact match or keyword, vector databases use approximate nearest neighbor (ANN) algorithms to find vectors that are semantically similar to the query vector. Weaviate is an open-source vector database that supports filtering, hybrid search, and multiple vectorizer integrations. It stores both the raw data (like text) and its corresponding vector embedding together.
+
+What is Chunking?
+
+Chunking is the process of splitting long documents into smaller pieces. This is necessary because embedding models have a token limit (e.g., 512 tokens), and because retrieving a small, focused chunk is more useful than retrieving an entire large document. Common chunking strategies include fixed-size chunking where text is split every N characters with some overlap, sentence-based chunking where text is split at sentence boundaries, and recursive chunking where text is split by paragraph, then sentence, then word until the target size is reached. Overlap between chunks (e.g., 50-100 tokens) ensures that context at chunk boundaries is not lost.
+
+Weaviate as a Vector Database
+
+Weaviate is a cloud-native, open-source vector database. It stores objects (text, images, etc.) alongside their vector embeddings. Weaviate supports BM25 keyword search, vector search, and hybrid search (combining both). It uses HNSW (Hierarchical Navigable Small World) graphs for fast approximate nearest neighbor search. Weaviate has a Python client (v4) and can be run locally via Docker, embedded in-process, or hosted on Weaviate Cloud.
+
+The Role of the LLM in RAG
+
+The LLM is the final component in the RAG pipeline. It receives a prompt that includes the user's question plus the retrieved context chunks. The LLM synthesizes an answer using the provided context. Good prompting instructs the model to answer only based on the provided context and to say "I don't know" if the answer is not in the context. This is called grounded generation and is key to reducing hallucinations.
+
+Common RAG Pitfalls
+
+Poor chunking leads to context being split in the middle of ideas. Irrelevant retrieval happens when the query embedding does not match the chunk embeddings well. Too many retrieved chunks can overwhelm the LLM context window. Too few retrieved chunks may miss important information. Embedding model mismatch occurs when different models are used for indexing and querying. Lack of metadata filtering can cause retrieval from the wrong documents.
